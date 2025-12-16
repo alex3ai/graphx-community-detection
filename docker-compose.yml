@@ -1,9 +1,5 @@
 version: '3.8'
 
-# GraphX Community Detection Engine
-# Cluster Spark otimizado para recursos limitados
-# ✅ CORREÇÃO: Checkpoint persistente via volume
-
 services:
   spark-master:
     image: bitnami/spark:3.5.0
@@ -15,21 +11,21 @@ services:
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
-      - SPARK_MASTER_WEBUI_PORT=8080
-      # Otimizações de memória
-      - SPARK_DAEMON_MEMORY=512m
+      # Otimização vinda do Claude: Ensina ao Spark que ele só tem 2 cores lógicos
       - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
+      - SPARK_DAEMON_MEMORY=512m
     ports:
-      - "8080:8080"  # Web UI
-      - "7077:7077"  # Master Port
-      - "4040:4040"  # Application UI
+      - "8080:8080"
+      - "7077:7077"
+      - "4040:4040"
     volumes:
       - ./data:/opt/spark-data
       - ./scripts:/opt/spark-apps
       - ./analysis:/opt/spark-analysis
       - ./config:/opt/spark/conf
       - ./logs:/opt/spark/logs
-      - ./checkpoints:/opt/spark-checkpoints  # ✅ NOVO: Checkpoint persistente
+      # ✅ CRÍTICO: Essencial para GraphFrames
+      - ./checkpoints:/opt/spark-checkpoints
     networks:
       - spark-network
     deploy:
@@ -60,7 +56,7 @@ services:
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
-      # Otimizações para evitar OOM
+      # Limpeza automática de logs/work dirs
       - SPARK_WORKER_OPTS=-Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=1800
     depends_on:
       spark-master:
@@ -69,7 +65,8 @@ services:
       - ./data:/opt/spark-data
       - ./scripts:/opt/spark-apps
       - ./logs:/opt/spark/logs
-      - ./checkpoints:/opt/spark-checkpoints  # ✅ NOVO: Checkpoint persistente
+      # ✅ CRÍTICO: Worker precisa acessar o mesmo checkpoint
+      - ./checkpoints:/opt/spark-checkpoints
     networks:
       - spark-network
     deploy:
@@ -80,44 +77,7 @@ services:
         reservations:
           cpus: '1.0'
           memory: 1G
-    healthcheck:
-      test: ["CMD", "pgrep", "-f", "Worker"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ✅ OPCIONAL: Jupyter comentado por padrão para economizar recursos
-  # Descomente apenas se necessário para análise interativa
-  # jupyter:
-  #   image: jupyter/pyspark-notebook:spark-3.5.0
-  #   container_name: jupyter_lab
-  #   user: root
-  #   ports:
-  #     - "8888:8888"
-  #   environment:
-  #     - JUPYTER_ENABLE_LAB=yes
-  #     - SPARK_MASTER=spark://spark-master:7077
-  #     - GRANT_SUDO=yes
-  #   volumes:
-  #     - ./notebooks:/home/jovyan/work
-  #     - ./data:/home/jovyan/data
-  #     - ./scripts:/home/jovyan/scripts
-  #   networks:
-  #     - spark-network
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '1.0'
-  #         memory: 1G
 
 networks:
   spark-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
-
-# ✅ NOVO: Volumes nomeados para persistência garantida
-volumes:
-  spark-checkpoints:
-    driver: local
