@@ -1,0 +1,44 @@
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# --- DADOS E LOGS (Ignorar conteúdo, manter pasta) ---
+
+# Ignorar arquivos CSV em input, mas manter a pasta
+data/input/*.csv
+
+# Ignorar tudo em output, exceto .gitkeep
+data/output/*
+!data/output/.gitkeep
+
+# Ignorar tudo em temp, exceto .gitkeep
+data/temp/*
+!data/temp/.gitkeep
+
+# Ignorar tudo em checkpoints, exceto .gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Ignorar gráficos gerados, exceto .gitkeep
+analysis/graphs/*
+!analysis/graphs/.gitkeep
+
+# Ignorar métricas geradas, exceto .gitkeep
+analysis/metrics/*
+!analysis/metrics/.gitkeep
+
+# Ignorar logs, exceto .gitkeep
+logs/*
+!logs/.gitkeep
+
+# Configurações locais
+.env
+.DS_Store
+.vscode/
+.idea/

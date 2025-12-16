@@ -1,0 +1,123 @@
+version: '3.8'
+
+# GraphX Community Detection Engine
+# Cluster Spark otimizado para recursos limitados
+# ✅ CORREÇÃO: Checkpoint persistente via volume
+
+services:
+  spark-master:
+    image: bitnami/spark:3.5.0
+    container_name: spark_master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_WEBUI_PORT=8080
+      # Otimizações de memória
+      - SPARK_DAEMON_MEMORY=512m
+      - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
+    ports:
+      - "8080:8080"  # Web UI
+      - "7077:7077"  # Master Port
+      - "4040:4040"  # Application UI
+    volumes:
+      - ./data:/opt/spark-data
+      - ./scripts:/opt/spark-apps
+      - ./analysis:/opt/spark-analysis
+      - ./config:/opt/spark/conf
+      - ./logs:/opt/spark/logs
+      - ./checkpoints:/opt/spark-checkpoints  # ✅ NOVO: Checkpoint persistente
+    networks:
+      - spark-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  spark-worker:
+    image: bitnami/spark:3.5.0
+    container_name: spark_worker_1
+    hostname: spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      # Otimizações para evitar OOM
+      - SPARK_WORKER_OPTS=-Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=1800
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    volumes:
+      - ./data:/opt/spark-data
+      - ./scripts:/opt/spark-apps
+      - ./logs:/opt/spark/logs
+      - ./checkpoints:/opt/spark-checkpoints  # ✅ NOVO: Checkpoint persistente
+    networks:
+      - spark-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "Worker"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ✅ OPCIONAL: Jupyter comentado por padrão para economizar recursos
+  # Descomente apenas se necessário para análise interativa
+  # jupyter:
+  #   image: jupyter/pyspark-notebook:spark-3.5.0
+  #   container_name: jupyter_lab
+  #   user: root
+  #   ports:
+  #     - "8888:8888"
+  #   environment:
+  #     - JUPYTER_ENABLE_LAB=yes
+  #     - SPARK_MASTER=spark://spark-master:7077
+  #     - GRANT_SUDO=yes
+  #   volumes:
+  #     - ./notebooks:/home/jovyan/work
+  #     - ./data:/home/jovyan/data
+  #     - ./scripts:/home/jovyan/scripts
+  #   networks:
+  #     - spark-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.0'
+  #         memory: 1G
+
+networks:
+  spark-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ✅ NOVO: Volumes nomeados para persistência garantida
+volumes:
+  spark-checkpoints:
+    driver: local
