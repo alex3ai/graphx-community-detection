@@ -11,7 +11,7 @@ pandas==2.1.4
 
 # Serialization & System
 pyarrow==14.0.1
-psutil==5.9.8       # ✅ CRÍTICO: Necessário para data_generator.py
+psutil==5.9.8   
 
 # Visualization
 matplotlib==3.8.2

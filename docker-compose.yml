@@ -2,22 +2,21 @@ version: '3.8'
 
 services:
   spark-master:
-    image: bitnami/spark:3.5.0
+    image: apache/spark:3.5.0
     container_name: spark_master
     hostname: spark-master
+    user: root # Necessário para evitar erros de permissão de escrita no Windows/Linux
     environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      # Otimização vinda do Claude: Ensina ao Spark que ele só tem 2 cores lógicos
-      - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
-      - SPARK_DAEMON_MEMORY=512m
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
     ports:
       - "8080:8080"
       - "7077:7077"
       - "4040:4040"
+    # Comando explícito para iniciar o Master na imagem Apache
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     volumes:
       - ./data:/opt/spark-data
       - ./scripts:/opt/spark-apps
@@ -44,20 +43,17 @@ services:
       start_period: 40s
 
   spark-worker:
-    image: bitnami/spark:3.5.0
+    image: apache/spark:3.5.0
     container_name: spark_worker_1
     hostname: spark-worker-1
+    user: root # Necessário para permissões
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=2G
+      - SPARK_NO_DAEMONIZE=true
       - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      # Limpeza automática de logs/work dirs
-      - SPARK_WORKER_OPTS=-Dspark.worker.cleanup.enabled=true -Dspark.worker.cleanup.interval=1800
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_WEBUI_PORT=8081
+    # Comando explícito para iniciar o Worker conectado ao Master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       spark-master:
         condition: service_healthy
