@@ -52,7 +52,7 @@ def run_spark_job(partitions: int, memory: str = "2G", pagerank_iter: int = 10,
     
     cmd = [
         "docker", "exec", "spark_master",
-        "spark-submit",
+        "/opt/spark/bin/spark-submit",
         "--master", "spark://spark-master:7077",
         "--executor-memory", memory,
         "--driver-memory", "1G",

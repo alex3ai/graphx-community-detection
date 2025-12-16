@@ -142,7 +142,7 @@ generate-custom: ## Gera dataset customizado (use: make generate-custom NODES=20
 process: ## Executa pipeline Spark completo (~5min para dataset médio)
 	@echo "$(BLUE)⚙️  Executando pipeline Spark...$(NC)"
 	@echo "$(YELLOW)⏳ Isso pode levar alguns minutos...$(NC)"
-	@docker exec $(SPARK_MASTER) spark-submit \
+	@docker exec $(SPARK_MASTER) /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--executor-memory 2G \
 		--driver-memory 1G \
@@ -154,7 +154,7 @@ process: ## Executa pipeline Spark completo (~5min para dataset médio)
 
 process-fast: ## Executa pipeline rápido (menos iterações) ~2min
 	@echo "$(BLUE)⚡ Executando pipeline RÁPIDO...$(NC)"
-	@docker exec $(SPARK_MASTER) spark-submit \
+	@docker exec $(SPARK_MASTER) /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--executor-memory 2G \
 		--driver-memory 1G \
@@ -167,7 +167,7 @@ process-fast: ## Executa pipeline rápido (menos iterações) ~2min
 
 process-optimized: ## ✅ NOVO: Pipeline com auto-tuning ativo
 	@echo "$(BLUE)🎯 Executando pipeline OTIMIZADO (auto-tuning)...$(NC)"
-	@docker exec $(SPARK_MASTER) spark-submit \
+	@docker exec $(SPARK_MASTER) /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--executor-memory 2G \
 		--driver-memory 1G \
@@ -305,7 +305,7 @@ watch-logs: ## Monitora logs em tempo real
 debug: ## ✅ NOVO: Modo debug com logs verbosos
 	@echo "$(BLUE)🐛 Modo Debug$(NC)"
 	@echo "Executando pipeline com logs verbosos..."
-	@docker exec $(SPARK_MASTER) spark-submit \
+	@docker exec $(SPARK_MASTER) /opt/spark/bin/spark-submit \
 		--master spark://spark-master:7077 \
 		--packages graphframes:graphframes:0.8.3-spark3.5-s_2.12 \
 		--conf spark.log.level=INFO \
