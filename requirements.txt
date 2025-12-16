@@ -1,0 +1,27 @@
+# GraphX Community Detection Engine - Dependências
+# Versões compatíveis com Spark 3.5.0 e Python 3.8+
+
+# Core Spark
+pyspark==3.5.0
+
+# Graph Processing & Math
+networkx==3.2.1
+numpy==1.26.3
+pandas==2.1.4
+
+# Serialization & System
+pyarrow==14.0.1
+psutil==5.9.8       # ✅ CRÍTICO: Necessário para data_generator.py
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Utilities
+tqdm==4.66.1
+
+# -----------------------------------------------------------
+# NOTA SOBRE GRAPHFRAMES:
+# Não instalamos via pip aqui. Ele é injetado no runtime do Spark
+# via flag: --packages graphframes:graphframes:0.8.3-spark3.5-s_2.12
+# -----------------------------------------------------------
