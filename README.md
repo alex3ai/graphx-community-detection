@@ -191,7 +191,7 @@ wsl --install
 
 ```bash
 # 1️⃣ Clone and setup project
-git clone https://github.com/alex-balex/graphx-community-detection.git
+git clone https://github.com/alex3ai/graphx-community-detection.git
 cd graphx-community-detection
 make setup-dev
 
@@ -1068,7 +1068,7 @@ We welcome contributions from the community! Here's how you can help:
 <td width="33%">
 
 **🐛 Bug Reports**
-- Check [existing issues](https://github.com/alex-balex/graphx-community-detection/issues)
+- Check [existing issues](https://github.com/alex3ai/graphx-community-detection/issues)
 - Use issue templates
 - Include system info
 - Provide minimal reproduction
@@ -1150,9 +1150,6 @@ If this project helped you, consider:
 ✨ **Contributing** improvements  
 📢 **Sharing** with colleagues  
 ☕ **Buying** me a coffee
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/alexbalex)
-
 
 ---
 
